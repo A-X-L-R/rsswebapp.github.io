@@ -511,15 +511,19 @@
     <script>
         // Konfigurasi Firebase - GANTI DENGAN KONFIGURASI ANDA
         const firebaseConfig = {
-    apiKey: "AIzaSyCVQ169jflIbfqjnaGEO1MM0qRtm8Yaav4",
-    authDomain: "jadwal-kunjungan-kerja.firebaseapp.com",
-    databaseURL: "https://jadwal-kunjungan-kerja-default-rtdb.firebaseio.com",
-    projectId: "jadwal-kunjungan-kerja",
-    storageBucket: "jadwal-kunjungan-kerja.firebasestorage.app",
-    messagingSenderId: "355798488442",
-    appId: "1:355798488442:web:4beaee4ac0573af70a32c3",
-    measurementId: "G-QPRNX7SY4G"
-  };
+  apiKey: "AIzaSyCVQ169jflIbfqjnaGEO1MM0qRtm8Yaav4",
+  authDomain: "jadwal-kunjungan-kerja.firebaseapp.com",
+  databaseURL: "https://jadwal-kunjungan-kerja-default-rtdb.firebaseio.com",
+  projectId: "jadwal-kunjungan-kerja",
+  storageBucket: "jadwal-kunjungan-kerja.firebasestorage.app",
+  messagingSenderId: "355798488442",
+  appId: "1:355798488442:web:4beaee4ac0573af70a32c3",
+  measurementId: "G-QPRNX7SY4G"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
         // Inisialisasi Firebase
         firebase.initializeApp(firebaseConfig);
@@ -985,3 +989,4 @@
     </script>
 </body>
 </html>
+
