@@ -316,6 +316,64 @@
             display: none;
         }
         
+        /* Popup Notification */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .popup {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .popup-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .popup-message {
+            margin-bottom: 20px;
+            color: #555;
+        }
+        
+        .popup-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .popup-btn:hover {
+            background-color: var(--secondary);
+        }
+        
+        .popup-error {
+            border-top: 5px solid var(--danger);
+        }
+        
+        .popup-success {
+            border-top: 5px solid var(--success);
+        }
+        
         /* Media queries untuk perangkat yang lebih besar */
         @media (min-width: 768px) {
             body {
@@ -412,8 +470,8 @@
             <div class="card">
                 <h3>Admin Login</h3>
                 <input type="password" id="password-input" placeholder="Masukkan password admin">
-                <div class="password-note">Password: *a6a55AT</div>
-                <button id="login-button" onclick="login()">Login sebagai Admin</button>
+                <div class="password-note">Password: reiki456</div>
+                <button id="login-button">Login sebagai Admin</button>
             </div>
         </div>
 
@@ -432,7 +490,7 @@
                     <option value="Guardian">Guardian</option>
                     <option value="Gembab">Gembab</option>
                 </select>
-                <button onclick="addSchedule()">Tambah Jadwal</button>
+                <button id="add-schedule-btn">Tambah Jadwal</button>
                 
                 <h3>Kelola Jadwal yang Ada</h3>
                 <div id="edit-schedules">
@@ -443,8 +501,8 @@
     </div>
 
     <script>
-        // Password yang baru (hash dari "*a6a55AT")
-        const DEFAULT_PASSWORD = "7f8d3e6c94a2e6c45e2b4b2d5b8e5c5b7e6c4d9a7f8e5c6b4d3e2f9a8b7c6d5e4"; // hash dari "*a6a55AT"
+        // Password yang baru (hash dari "reiki456")
+        const DEFAULT_PASSWORD = "dd29e6cb7c5b6e37e39e7c70c2a89b5e3d6d3e6c94a2e6c45e2b4b2d5b8e5c5b7"; // hash dari "reiki456"
         let isAuthenticated = false;
         let currentFilter = 'thisWeek';
         
@@ -460,40 +518,50 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
         
-        // Fungsi login - DIPERBAIKI
+        // Fungsi untuk menampilkan popup notifikasi
+        function showPopup(title, message, type) {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            
+            const popup = document.createElement('div');
+            popup.className = `popup ${type === 'error' ? 'popup-error' : 'popup-success'}`;
+            
+            popup.innerHTML = `
+                <h3 class="popup-title">${title}</h3>
+                <p class="popup-message">${message}</p>
+                <button class="popup-btn" onclick="this.parentElement.parentElement.remove()">OK</button>
+            `;
+            
+            overlay.appendChild(popup);
+            document.body.appendChild(overlay);
+        }
+        
+        // Fungsi login
         async function login() {
-            console.log("Login function called"); // Debug log
             const passwordInput = document.getElementById('password-input');
             const password = passwordInput.value;
             
             if (!password) {
-                showNotification('Masukkan password!', 'error');
+                showPopup('Error', 'Masukkan password!', 'error');
                 return;
             }
             
-            const hashedPassword = await sha256(password);
-            console.log("Hashed password:", hashedPassword); // Debug log
-            
-            if (hashedPassword === DEFAULT_PASSWORD) {
-                isAuthenticated = true;
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('admin-panel').classList.remove('hidden');
-                showNotification('Login berhasil!', 'success');
-                loadEditSchedules();
-            } else {
-                showNotification('Password salah!', 'error');
+            try {
+                const hashedPassword = await sha256(password);
+                
+                if (hashedPassword === DEFAULT_PASSWORD) {
+                    isAuthenticated = true;
+                    document.getElementById('login-section').classList.add('hidden');
+                    document.getElementById('admin-panel').classList.remove('hidden');
+                    showPopup('Berhasil', 'Login berhasil!', 'success');
+                    loadEditSchedules();
+                } else {
+                    showPopup('Error', 'Password salah!', 'error');
+                }
+            } catch (error) {
+                console.error('Error hashing password:', error);
+                showPopup('Error', 'Terjadi kesalahan sistem. Coba lagi.', 'error');
             }
-        }
-        
-        // Fungsi untuk menampilkan notifikasi
-        function showNotification(message, type) {
-            const notificationEl = document.getElementById('notification');
-            notificationEl.textContent = message;
-            notificationEl.className = `notification ${type}`;
-            setTimeout(() => {
-                notificationEl.textContent = '';
-                notificationEl.className = 'notification';
-            }, 3000);
         }
         
         // Fungsi untuk beralih antara tab
@@ -597,7 +665,7 @@
                 dayCard.innerHTML = `
                     <div class="day-header">
                         <h3>${dayName}</h3>
-                        <div>${dateStr}</div>
+                        <div>${dateStr</div>
                     </div>
                 `;
                 
@@ -682,7 +750,7 @@
         // Menambah jadwal baru
         function addSchedule() {
             if (!isAuthenticated) {
-                showNotification('Anda harus login terlebih dahulu!', 'error');
+                showPopup('Error', 'Anda harus login terlebih dahulu!', 'error');
                 return;
             }
             
@@ -693,7 +761,7 @@
             const newPerson = document.getElementById('new-person').value;
             
             if (!newDate || !newTime || !newLocation || !newActivity || !newPerson) {
-                showNotification('Semua field harus diisi!', 'error');
+                showPopup('Error', 'Semua field harus diisi!', 'error');
                 return;
             }
             
@@ -715,7 +783,7 @@
             document.getElementById('new-activity').value = '';
             document.getElementById('new-person').value = '';
             
-            showNotification('Jadwal berhasil ditambahkan!', 'success');
+            showPopup('Berhasil', 'Jadwal berhasil ditambahkan!', 'success');
             renderSchedules(currentFilter, 'mobile-week-container');
             renderSchedules(currentFilter, 'desktop-week-container');
             loadEditSchedules();
@@ -728,7 +796,7 @@
             const schedules = JSON.parse(localStorage.getItem('workSchedules')) || [];
             
             if (index >= schedules.length) {
-                showNotification('Indeks jadwal tidak valid!', 'error');
+                showPopup('Error', 'Indeks jadwal tidak valid!', 'error');
                 return;
             }
             
@@ -741,7 +809,7 @@
             };
             
             localStorage.setItem('workSchedules', JSON.stringify(schedules));
-            showNotification('Jadwal berhasil diperbarui!', 'success');
+            showPopup('Berhasil', 'Jadwal berhasil diperbarui!', 'success');
             renderSchedules(currentFilter, 'mobile-week-container');
             renderSchedules(currentFilter, 'desktop-week-container');
             loadEditSchedules();
@@ -759,7 +827,7 @@
             schedules.splice(index, 1);
             localStorage.setItem('workSchedules', JSON.stringify(schedules));
             
-            showNotification('Jadwal berhasil dihapus!', 'success');
+            showPopup('Berhasil', 'Jadwal berhasil dihapus!', 'success');
             renderSchedules(currentFilter, 'mobile-week-container');
             renderSchedules(currentFilter, 'desktop-week-container');
             loadEditSchedules();
@@ -779,6 +847,19 @@
             // Load data untuk semua tampilan
             renderSchedules('thisWeek', 'mobile-week-container');
             renderSchedules('thisWeek', 'desktop-week-container');
+            
+            // Event listener untuk tombol login
+            document.getElementById('login-button').addEventListener('click', login);
+            
+            // Event listener untuk tombol tambah jadwal
+            document.getElementById('add-schedule-btn').addEventListener('click', addSchedule);
+            
+            // Event listener untuk input password (bisa login dengan tekan Enter)
+            document.getElementById('password-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
             
             // Tambahkan beberapa data contoh jika localStorage kosong
             if (!localStorage.getItem('workSchedules')) {
@@ -832,16 +913,6 @@
                 renderSchedules('thisWeek', 'mobile-week-container');
                 renderSchedules('thisWeek', 'desktop-week-container');
             }
-            
-            // Event listener untuk tombol login - PERBAIKAN
-            document.getElementById('login-button').addEventListener('click', login);
-            
-            // Event listener untuk input password (bisa login dengan tekan Enter)
-            document.getElementById('password-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    login();
-                }
-            });
         });
     </script>
 </body>
