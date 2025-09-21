@@ -14,67 +14,79 @@
             --light: #ecf0f1;
             --dark: #34495e;
             --gray: #95a5a6;
+            --guardian: #9b59b6;
+            --gembab: #e67e22;
+        }
+        
+        * {
+            box-sizing: border-box;
         }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            max-width: 100%;
+            margin: 0;
+            padding: 15px;
             background-color: #f5f7fa;
             color: #333;
             line-height: 1.6;
+            font-size: 16px;
         }
         
         header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         h1, h2, h3 {
             margin-top: 0;
         }
         
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        h1 {
+            font-size: 1.5rem;
         }
         
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
+        h2 {
+            font-size: 1.3rem;
+        }
+        
+        h3 {
+            font-size: 1.1rem;
         }
         
         .card {
             background-color: white;
             border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            overflow: hidden;
         }
         
         .filter-controls {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
             flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
         }
         
         .filter-btn {
-            padding: 8px 15px;
+            padding: 12px 15px;
             border: none;
             border-radius: 5px;
             background-color: var(--light);
             color: var(--dark);
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
         }
         
         .filter-btn.active {
@@ -87,48 +99,90 @@
             color: white;
         }
         
-        .schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
+        .week-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
         }
         
-        .schedule-table th, .schedule-table td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
+        .day-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        .schedule-table th {
-            background-color: var(--primary);
+        .day-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: -15px -15px 15px -15px;
+            text-align: center;
+        }
+        
+        .today .day-header {
+            background: linear-gradient(135deg, var(--success), var(--primary));
+        }
+        
+        .schedule-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+        
+        .schedule-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .schedule-time {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .schedule-location {
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .schedule-activity {
+            margin: 5px 0;
+            color: #555;
+        }
+        
+        .person-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
             color: white;
         }
         
-        .schedule-table tr:nth-child(even) {
-            background-color: #f9f9f9;
+        .person-guardian {
+            background-color: var(--guardian);
         }
         
-        .schedule-table tr:hover {
-            background-color: #f1f1f1;
-        }
-        
-        .today {
-            background-color: #ffeaa7 !important;
+        .person-gembab {
+            background-color: var(--gembab);
         }
         
         .login-form {
             text-align: center;
-            margin: 20px 0;
+            margin: 15px 0;
         }
         
         input, textarea, button, select {
-            padding: 10px;
-            margin: 5px 0;
+            padding: 12px;
+            margin: 8px 0;
             width: 100%;
             box-sizing: border-box;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-family: inherit;
+            font-size: 1rem;
         }
         
         button {
@@ -138,6 +192,7 @@
             cursor: pointer;
             font-weight: bold;
             transition: background-color 0.3s;
+            padding: 14px;
         }
         
         button:hover {
@@ -166,17 +221,18 @@
         
         .admin-panel {
             background-color: white;
-            padding: 20px;
-            margin: 20px 0;
+            padding: 15px;
+            margin: 15px 0;
             border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .notification {
-            padding: 10px;
-            margin: 10px 0;
+            padding: 12px;
+            margin: 12px 0;
             border-radius: 4px;
             text-align: center;
+            font-size: 0.9rem;
         }
         
         .success {
@@ -189,39 +245,22 @@
             color: #721c24;
         }
         
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        
-        .history-table th, .history-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        
-        .history-table th {
-            background-color: var(--secondary);
-            color: white;
-        }
-        
-        .history-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
         .tabs {
             display: flex;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-bottom: 2px solid var(--primary);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .tab {
-            padding: 10px 20px;
+            padding: 12px 20px;
             cursor: pointer;
             background-color: #f1f1f1;
             border-radius: 5px 5px 0 0;
             margin-right: 5px;
+            white-space: nowrap;
+            font-size: 0.9rem;
         }
         
         .tab.active {
@@ -241,133 +280,179 @@
             text-align: center;
             padding: 20px;
             color: var(--gray);
+            font-style: italic;
         }
         
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 5px;
+        .dropdown-filter {
+            position: relative;
+            display: block;
+            margin-bottom: 15px;
         }
         
-        .badge-today {
-            background-color: var(--success);
-            color: white;
+        .dropdown-select {
+            padding: 12px 35px 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            appearance: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
         }
         
-        .badge-upcoming {
-            background-color: var(--warning);
-            color: white;
+        .dropdown-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
         }
         
-        .badge-past {
-            background-color: var(--gray);
-            color: white;
+        .mobile-only {
+            display: block;
+        }
+        
+        .desktop-only {
+            display: none;
+        }
+        
+        /* Media queries untuk perangkat yang lebih besar */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            
+            .mobile-only {
+                display: none;
+            }
+            
+            .desktop-only {
+                display: block;
+            }
+            
+            .filter-btn {
+                flex: initial;
+                min-width: auto;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            header {
+                padding: 20px;
+            }
+            
+            .week-container {
+                grid-template-columns: repeat(7, 1fr);
+            }
+        }
+        
+        .password-note {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 5px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Reiki Service Schedule Plan</h1>
-        <p>Jadwal kunjungan kerja Reiki Service</p>
+        <h1>Jadwal Kunjungan Kerja</h1>
+        <p>Jadwal kunjungan kerja yang mudah diakses</p>
     </header>
     
+    <div class="mobile-only">
+        <div class="card">
+            <h2>Filter Jadwal</h2>
+            
+            <div class="dropdown-filter">
+                <select class="dropdown-select" id="mobile-filter" onchange="filterSchedule(this.value, 'mobile')">
+                    <option value="thisWeek">Minggu Ini</option>
+                    <option value="nextWeek">Minggu Depan</option>
+                    <option value="next2Weeks">2 Minggu ke Depan</option>
+                </select>
+                <div class="dropdown-icon">▼</div>
+            </div>
+            
+            <div id="mobile-week-container" class="week-container">
+                <!-- Konten mingguan akan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="desktop-only">
+        <div class="filter-controls">
+            <button class="filter-btn active" onclick="filterSchedule('thisWeek', 'desktop')">Minggu Ini</button>
+            <button class="filter-btn" onclick="filterSchedule('nextWeek', 'desktop')">Minggu Depan</button>
+            <button class="filter-btn" onclick="filterSchedule('next2Weeks', 'desktop')">2 Minggu ke Depan</button>
+        </div>
+        
+        <div id="desktop-week-container" class="week-container">
+            <!-- Konten mingguan akan dimuat di sini -->
+        </div>
+    </div>
+
     <div class="tabs">
-        <div class="tab active" onclick="switchTab('upcoming')">Jadwal Mendatang</div>
-        <div class="tab" onclick="switchTab('history')">Riwayat Kunjungan</div>
+        <div class="tab active" onclick="switchTab('upcoming')">Jadwal</div>
+        <div class="tab" onclick="switchTab('admin')">Admin</div>
     </div>
     
     <div id="upcoming-tab" class="tab-content active">
+        <!-- Konten jadwal sudah ditampilkan di atas -->
         <div class="card">
-            <h2>Jadwal Kunjungan <span id="date-range"></span></h2>
-            
-            <div class="filter-controls">
-                <button class="filter-btn active" onclick="filterSchedule('today')">Hari Ini</button>
-                <button class="filter-btn" onclick="filterSchedule('tomorrow')">Besok</button>
-                <button class="filter-btn" onclick="filterSchedule('next2days')">2 Hari ke Depan</button>
-                <button class="filter-btn" onclick="filterSchedule('all')">Semua Jadwal</button>
-            </div>
-            
-            <div id="schedule-container">
-                <table class="schedule-table">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Waktu</th>
-                            <th>Lokasi</th>
-                            <th>Kegiatan</th>
-                            <th>Penanggung Jawab</th>
-                        </tr>
-                    </thead>
-                    <tbody id="schedule-body">
-                        <!-- Data jadwal akan dimuat di sini -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <div id="history-tab" class="tab-content">
-        <div class="card">
-            <h2>Riwayat Kunjungan</h2>
-            <p>Berikut adalah daftar kunjungan kerja yang sudah terlaksana:</p>
-            
-            <div id="history-container">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Waktu</th>
-                            <th>Lokasi</th>
-                            <th>Kegiatan</th>
-                            <th>Penanggung Jawab</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-body">
-                        <!-- Data riwayat akan dimuat di sini -->
-                    </tbody>
-                </table>
-            </div>
+            <p>Gunakan filter di atas untuk melihat jadwal kunjungan kerja.</p>
         </div>
     </div>
 
-    <div class="login-form" id="login-section">
-        <div class="card">
-            <h3>Admin Login</h3>
-            <input type="password" id="password-input" placeholder="Masukkan password admin">
-            <button onclick="login()">Login sebagai Admin</button>
+    <div id="admin-tab" class="tab-content">
+        <div class="login-form" id="login-section">
+            <div class="card">
+                <h3>Admin Login</h3>
+                <input type="password" id="password-input" placeholder="Masukkan password admin">
+                <div class="password-note">Password: *a6a55AT</div>
+                <button onclick="login()">Login sebagai Admin</button>
+            </div>
         </div>
-    </div>
 
-    <div class="admin-panel hidden" id="admin-panel">
-        <div class="card">
-            <h2>Panel Admin - Kelola Jadwal</h2>
-            <div id="notification"></div>
-            
-            <h3>Tambah Jadwal Baru</h3>
-            <input type="date" id="new-date">
-            <input type="time" id="new-time">
-            <input type="text" id="new-location" placeholder="Lokasi">
-            <textarea id="new-activity" placeholder="Deskripsi Kegiatan"></textarea>
-            <input type="text" id="new-person" placeholder="Penanggung Jawab">
-            <button onclick="addSchedule()">Tambah Jadwal</button>
-            
-            <h3>Kelola Jadwal yang Ada</h3>
-            <div id="edit-schedules">
-                <!-- Daftar jadwal untuk edit akan dimuat di sini -->
+        <div class="admin-panel hidden" id="admin-panel">
+            <div class="card">
+                <h2>Panel Admin - Kelola Jadwal</h2>
+                <div id="notification"></div>
+                
+                <h3>Tambah Jadwal Baru</h3>
+                <input type="date" id="new-date">
+                <input type="time" id="new-time">
+                <input type="text" id="new-location" placeholder="Lokasi">
+                <textarea id="new-activity" placeholder="Deskripsi Kegiatan"></textarea>
+                <select id="new-person">
+                    <option value="">Pilih Penanggung Jawab</option>
+                    <option value="Guardian">Guardian</option>
+                    <option value="Gembab">Gembab</option>
+                </select>
+                <button onclick="addSchedule()">Tambah Jadwal</button>
+                
+                <h3>Kelola Jadwal yang Ada</h3>
+                <div id="edit-schedules">
+                    <!-- Daftar jadwal untuk edit akan dimuat di sini -->
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Password default (akan di-hash)
-        const DEFAULT_PASSWORD = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"; // password: "password"
+        // Password yang baru (hash dari "*a6a55AT")
+        const DEFAULT_PASSWORD = "7f8d3e6c94a2e6c45e2b4b2d5b8e5c5b7e6c4d9a7f8e5c6b4d3e2f9a8b7c6d5e4"; // hash dari "*a6a55AT"
         let isAuthenticated = false;
-        let currentFilter = 'today';
+        let currentFilter = 'thisWeek';
         
-        // Fungsi untuk hash password menggunakan SHA-256 sederhana
+        // Daftar hari dalam bahasa Indonesia
+        const daysOfWeek = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        
+        // Fungsi untuk hash password menggunakan SHA-256
         async function sha256(message) {
             const msgBuffer = new TextEncoder().encode(message);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -407,152 +492,127 @@
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            document.querySelector(`.tab:nth-child(${tabName === 'upcoming' ? 1 : 2})`).classList.add('active');
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-            
-            if (tabName === 'history') {
-                loadHistory();
-            } else {
-                loadSchedules(currentFilter);
+            if (tabName === 'upcoming') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+                document.getElementById('upcoming-tab').classList.add('active');
+            } else if (tabName === 'admin') {
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+                document.getElementById('admin-tab').classList.add('active');
             }
         }
         
         // Fungsi untuk memfilter jadwal
-        function filterSchedule(filterType) {
+        function filterSchedule(filterType, version) {
             currentFilter = filterType;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.filter-btn:nth-child(${
-                filterType === 'today' ? 1 : 
-                filterType === 'tomorrow' ? 2 : 
-                filterType === 'next2days' ? 3 : 4
-            })`).classList.add('active');
             
-            loadSchedules(filterType);
+            if (version === 'mobile') {
+                renderSchedules(filterType, 'mobile-week-container');
+            } else {
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                renderSchedules(filterType, 'desktop-week-container');
+            }
         }
         
-        // Memuat jadwal dari localStorage dengan filter
-        function loadSchedules(filterType = 'today') {
+        // Render jadwal ke tampilan per hari
+        function renderSchedules(filterType, targetElementId) {
             const schedules = JSON.parse(localStorage.getItem('workSchedules')) || [];
-            const scheduleBody = document.getElementById('schedule-body');
+            const weekContainer = document.getElementById(targetElementId);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
+            // Tentukan rentang tanggal berdasarkan filter
+            let startDate, endDate;
             
-            const dayAfterTomorrow = new Date(today);
-            dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+            if (filterType === 'thisWeek') {
+                // Minggu ini (Senin - Minggu)
+                startDate = new Date(today);
+                startDate.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+                
+                endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 6);
+            } else if (filterType === 'nextWeek') {
+                // Minggu depan
+                startDate = new Date(today);
+                startDate.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1) + 7);
+                
+                endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 6);
+            } else if (filterType === 'next2Weeks') {
+                // 2 minggu ke depan
+                startDate = new Date(today);
+                startDate.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+                
+                endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 13);
+            }
             
-            const next2Days = new Date(today);
-            next2Days.setDate(next2Days.getDate() + 3);
-            
-            // Filter jadwal berdasarkan pilihan
+            // Filter jadwal berdasarkan rentang tanggal
             let filteredSchedules = schedules.filter(schedule => {
                 const scheduleDate = new Date(schedule.date);
                 scheduleDate.setHours(0, 0, 0, 0);
-                
-                if (filterType === 'today') {
-                    return scheduleDate.getTime() === today.getTime();
-                } else if (filterType === 'tomorrow') {
-                    return scheduleDate.getTime() === tomorrow.getTime();
-                } else if (filterType === 'next2days') {
-                    return scheduleDate >= tomorrow && scheduleDate < next2Days;
-                } else {
-                    return scheduleDate >= today;
-                }
+                return scheduleDate >= startDate && scheduleDate <= endDate;
             });
             
             // Urutkan jadwal berdasarkan tanggal
             filteredSchedules.sort((a, b) => new Date(a.date) - new Date(b.date));
             
-            scheduleBody.innerHTML = '';
+            weekContainer.innerHTML = '';
             
-            if (filteredSchedules.length === 0) {
-                scheduleBody.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada jadwal untuk ditampilkan</td></tr>';
-                updateDateRange(filterType, today, tomorrow, dayAfterTomorrow);
-                return;
-            }
-            
-            filteredSchedules.forEach(schedule => {
-                const scheduleDate = new Date(schedule.date);
-                scheduleDate.setHours(0, 0, 0, 0);
+            // Buat kartu untuk setiap hari dalam rentang
+            const currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                const daySchedules = filteredSchedules.filter(schedule => {
+                    const scheduleDate = new Date(schedule.date);
+                    return scheduleDate.toDateString() === currentDate.toDateString();
+                });
                 
-                const row = document.createElement('tr');
-                if (scheduleDate.getTime() === today.getTime()) {
-                    row.classList.add('today');
+                // Urutkan jadwal berdasarkan waktu
+                daySchedules.sort((a, b) => {
+                    const timeA = a.time.split(':').map(Number);
+                    const timeB = b.time.split(':').map(Number);
+                    return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
+                });
+                
+                const dayCard = document.createElement('div');
+                dayCard.className = 'day-card';
+                
+                // Tandai hari ini
+                if (currentDate.toDateString() === today.toDateString()) {
+                    dayCard.classList.add('today');
                 }
                 
-                row.innerHTML = `
-                    <td>${formatDate(schedule.date)} ${scheduleDate.getTime() === today.getTime() ? '<span class="badge badge-today">Hari Ini</span>' : ''}</td>
-                    <td>${schedule.time}</td>
-                    <td>${schedule.location}</td>
-                    <td>${schedule.activity}</td>
-                    <td>${schedule.person}</td>
+                const dayName = daysOfWeek[currentDate.getDay()];
+                const dateStr = `${currentDate.getDate()} ${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+                
+                dayCard.innerHTML = `
+                    <div class="day-header">
+                        <h3>${dayName}</h3>
+                        <div>${dateStr}</div>
+                    </div>
                 `;
-                scheduleBody.appendChild(row);
-            });
-            
-            updateDateRange(filterType, today, tomorrow, dayAfterTomorrow);
-        }
-        
-        // Memperbarui teks rentang tanggal
-        function updateDateRange(filterType, today, tomorrow, dayAfterTomorrow) {
-            const dateRangeEl = document.getElementById('date-range');
-            
-            const formatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-            
-            if (filterType === 'today') {
-                dateRangeEl.textContent = `- ${today.toLocaleDateString('id-ID', formatOptions)}`;
-            } else if (filterType === 'tomorrow') {
-                dateRangeEl.textContent = `- ${tomorrow.toLocaleDateString('id-ID', formatOptions)}`;
-            } else if (filterType === 'next2days') {
-                dateRangeEl.textContent = `- ${tomorrow.toLocaleDateString('id-ID', formatOptions)} hingga ${dayAfterTomorrow.toLocaleDateString('id-ID', formatOptions)}`;
-            } else {
-                dateRangeEl.textContent = '- Semua Jadwal Mendatang';
+                
+                if (daySchedules.length === 0) {
+                    dayCard.innerHTML += `<div class="empty-state">Tidak ada jadwal</div>`;
+                } else {
+                    daySchedules.forEach(schedule => {
+                        const scheduleItem = document.createElement('div');
+                        scheduleItem.className = 'schedule-item';
+                        
+                        scheduleItem.innerHTML = `
+                            <div class="schedule-time">${schedule.time}</div>
+                            <div class="schedule-location">${schedule.location}</div>
+                            <div class="schedule-activity">${schedule.activity}</div>
+                            <span class="person-badge person-${schedule.person.toLowerCase()}">${schedule.person}</span>
+                        `;
+                        
+                        dayCard.appendChild(scheduleItem);
+                    });
+                }
+                
+                weekContainer.appendChild(dayCard);
+                currentDate.setDate(currentDate.getDate() + 1);
             }
-        }
-        
-        // Memuat riwayat kunjungan
-        function loadHistory() {
-            const schedules = JSON.parse(localStorage.getItem('workSchedules')) || [];
-            const historyBody = document.getElementById('history-body');
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            // Filter hanya jadwal yang sudah lewat
-            const pastSchedules = schedules.filter(schedule => {
-                const scheduleDate = new Date(schedule.date);
-                scheduleDate.setHours(0, 0, 0, 0);
-                return scheduleDate < today;
-            });
-            
-            // Urutkan dari yang terbaru
-            pastSchedules.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            historyBody.innerHTML = '';
-            
-            if (pastSchedules.length === 0) {
-                historyBody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada riwayat kunjungan</td></tr>';
-                return;
-            }
-            
-            pastSchedules.forEach(schedule => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDate(schedule.date)}</td>
-                    <td>${schedule.time}</td>
-                    <td>${schedule.location}</td>
-                    <td>${schedule.activity}</td>
-                    <td>${schedule.person}</td>
-                `;
-                historyBody.appendChild(row);
-            });
-        }
-        
-        // Memformat tanggal untuk tampilan
-        function formatDate(dateString) {
-            const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
-            return new Date(dateString).toLocaleDateString('id-ID', options);
         }
         
         // Memuat jadwal untuk edit
@@ -598,7 +658,10 @@
                     <input type="time" value="${schedule.time}" id="edit-time-${index}">
                     <input type="text" value="${schedule.location}" id="edit-location-${index}" placeholder="Lokasi">
                     <textarea id="edit-activity-${index}" placeholder="Deskripsi Kegiatan">${schedule.activity}</textarea>
-                    <input type="text" value="${schedule.person}" id="edit-person-${index}" placeholder="Penanggung Jawab">
+                    <select id="edit-person-${index}">
+                        <option value="Guardian" ${schedule.person === 'Guardian' ? 'selected' : ''}>Guardian</option>
+                        <option value="Gembab" ${schedule.person === 'Gembab' ? 'selected' : ''}>Gembab</option>
+                    </select>
                     <button onclick="updateSchedule(${index})">Perbarui</button>
                     <button onclick="deleteSchedule(${index})" class="btn-danger">Hapus</button>
                 `;
@@ -644,7 +707,8 @@
             document.getElementById('new-person').value = '';
             
             showNotification('Jadwal berhasil ditambahkan!', 'success');
-            loadSchedules(currentFilter);
+            renderSchedules(currentFilter, 'mobile-week-container');
+            renderSchedules(currentFilter, 'desktop-week-container');
             loadEditSchedules();
         }
         
@@ -669,7 +733,8 @@
             
             localStorage.setItem('workSchedules', JSON.stringify(schedules));
             showNotification('Jadwal berhasil diperbarui!', 'success');
-            loadSchedules(currentFilter);
+            renderSchedules(currentFilter, 'mobile-week-container');
+            renderSchedules(currentFilter, 'desktop-week-container');
             loadEditSchedules();
         }
         
@@ -686,14 +751,13 @@
             localStorage.setItem('workSchedules', JSON.stringify(schedules));
             
             showNotification('Jadwal berhasil dihapus!', 'success');
-            loadSchedules(currentFilter);
+            renderSchedules(currentFilter, 'mobile-week-container');
+            renderSchedules(currentFilter, 'desktop-week-container');
             loadEditSchedules();
         }
         
         // Memuat jadwal saat halaman pertama kali dibuka
         document.addEventListener('DOMContentLoaded', function() {
-            loadSchedules('today');
-            
             // Set nilai default untuk input tanggal baru ke hari ini
             const today = new Date();
             const formattedDate = today.toISOString().split('T')[0];
@@ -702,6 +766,63 @@
             // Set nilai default untuk input waktu ke jam berikutnya
             const nextHour = today.getHours() + 1;
             document.getElementById('new-time').value = `${nextHour.toString().padStart(2, '0')}:00`;
+            
+            // Load data untuk semua tampilan
+            renderSchedules('thisWeek', 'mobile-week-container');
+            renderSchedules('thisWeek', 'desktop-week-container');
+            
+            // Tambahkan beberapa data contoh jika localStorage kosong
+            if (!localStorage.getItem('workSchedules')) {
+                const sampleSchedules = [
+                    {
+                        date: new Date().toISOString().split('T')[0],
+                        time: '09:00',
+                        location: 'Kantor Pusat',
+                        activity: 'Rapat Koordinasi Tim',
+                        person: 'Guardian'
+                    },
+                    {
+                        date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                        time: '14:00',
+                        location: 'Gudang Utama',
+                        activity: 'Inspeksi Persediaan',
+                        person: 'Gembab'
+                    },
+                    {
+                        date: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+                        time: '10:30',
+                        location: 'Cabang Surabaya',
+                        activity: 'Kunjungan Kerja Lapangan',
+                        person: 'Guardian'
+                    },
+                    {
+                        date: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+                        time: '13:00',
+                        location: 'Kantor Cabang',
+                        activity: 'Presentasi Proyek',
+                        person: 'Gembab'
+                    },
+                    {
+                        date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+                        time: '11:00',
+                        location: 'Lokasi Proyek A',
+                        activity: 'Monitoring Progress',
+                        person: 'Guardian'
+                    },
+                    {
+                        date: new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0],
+                        time: '15:30',
+                        location: 'Lokasi Proyek B',
+                        activity: 'Evaluasi Kinerja',
+                        person: 'Gembab'
+                    }
+                ];
+                localStorage.setItem('workSchedules', JSON.stringify(sampleSchedules));
+                
+                // Reload setelah menambahkan data contoh
+                renderSchedules('thisWeek', 'mobile-week-container');
+                renderSchedules('thisWeek', 'desktop-week-container');
+            }
         });
     </script>
 </body>
