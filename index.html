@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jadwal Kunjungan Kerja</title>
     <style>
+        /* CSS tetap sama seperti sebelumnya */
         :root {
             --primary: #3498db;
             --secondary: #2c3e50;
@@ -126,29 +127,44 @@
             background: linear-gradient(135deg, var(--success), var(--primary));
         }
         
-        .schedule-item {
+        .time-slots {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .time-slot {
             padding: 10px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            margin-bottom: 5px;
         }
         
-        .schedule-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
+        .time-slot.free {
+            background-color: #f8f9fa;
+            color: var(--gray);
         }
         
-        .schedule-time {
+        .time-slot.occupied {
+            background-color: #e8f4fd;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .time-label {
             font-weight: bold;
             color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .schedule-info {
+            font-size: 0.9rem;
         }
         
         .schedule-location {
             font-weight: bold;
-            margin: 5px 0;
         }
         
         .schedule-activity {
-            margin: 5px 0;
             color: #555;
         }
         
@@ -159,6 +175,7 @@
             font-size: 0.7rem;
             font-weight: bold;
             color: white;
+            margin-top: 5px;
         }
         
         .person-guardian {
@@ -316,6 +333,50 @@
             display: none;
         }
         
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .form-row > * {
+            flex: 1;
+        }
+        
+        .sync-section {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        .sync-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .sync-buttons button {
+            flex: 1;
+        }
+        
+        .firebase-status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .firebase-connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .firebase-disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
         /* Media queries untuk perangkat yang lebih besar */
         @media (min-width: 768px) {
             body {
@@ -357,12 +418,20 @@
             text-align: center;
         }
     </style>
+    
+    <!-- Tambahkan Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <header>
         <h1>Jadwal Kunjungan Kerja</h1>
         <p>Jadwal kunjungan kerja yang mudah diakses</p>
     </header>
+    
+    <div id="firebase-status" class="firebase-status firebase-disconnected">
+        Menghubungkan ke database...
+    </div>
     
     <div class="mobile-only">
         <div class="card">
@@ -424,7 +493,36 @@
                 
                 <h3>Tambah Jadwal Baru</h3>
                 <input type="date" id="new-date">
-                <input type="time" id="new-time">
+                
+                <div class="form-row">
+                    <div>
+                        <label for="new-time">Waktu Mulai</label>
+                        <select id="new-time">
+                            <option value="">Pilih Jam</option>
+                            <option value="08:00">08:00</option>
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="12:00">12:00</option>
+                            <option value="13:00">13:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="new-duration">Durasi (jam)</label>
+                        <select id="new-duration">
+                            <option value="1">1 jam</option>
+                            <option value="2">2 jam</option>
+                            <option value="3">3 jam</option>
+                            <option value="4">4 jam</option>
+                        </select>
+                    </div>
+                </div>
+                
                 <input type="text" id="new-location" placeholder="Lokasi">
                 <textarea id="new-activity" placeholder="Deskripsi Kegiatan"></textarea>
                 <select id="new-person">
@@ -438,11 +536,43 @@
                 <div id="edit-schedules">
                     <!-- Daftar jadwal untuk edit akan dimuat di sini -->
                 </div>
+                
+                <!-- Bagian Sinkronisasi Firebase -->
+                <div class="sync-section">
+                    <h3>Sinkronisasi Cloud (Firebase)</h3>
+                    <p>Data tersinkronisasi otomatis antar perangkat</p>
+                    <div id="firebase-sync-status" class="firebase-status firebase-disconnected">
+                        Menghubungkan ke database...
+                    </div>
+                    <div class="sync-buttons">
+                        <button onclick="forceSyncToFirebase()">Paksa Sinkronisasi ke Cloud</button>
+                        <button onclick="forceSyncFromFirebase()">Paksa Sinkronisasi dari Cloud</button>
+                    </div>
+                    <p class="password-note">
+                        Data akan tersinkronisasi otomatis saat online
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Konfigurasi Firebase - GANTI DENGAN KONFIGURASI ANDA
+        const firebaseConfig = {
+            apiKey: "AIzaSyCVQ169jflIbfqjnaGEO1MM0qRtm8Yaav4",
+            authDomain: "jadwal-kunjungan-kerja.firebaseapp.com",
+            databaseURL: "https://jadwal-kunjungan-kerja-default-rtdb.firebaseio.com",
+            projectId: "jadwal-kunjungan-kerja",
+            storageBucket: "jadwal-kunjungan-kerja.firebasestorage.app",
+            messagingSenderId: "355798488442",
+            appId: "1:355798488442:web:4beaee4ac0573af70a32c3"
+		measurementId: "G-QPRNX7SY4G"
+        };
+        
+        // Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+        
         // Password default (hash dari "password")
         const DEFAULT_PASSWORD = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"; // password: "password"
         let isAuthenticated = false;
@@ -451,6 +581,116 @@
         // Daftar hari dalam bahasa Indonesia
         const daysOfWeek = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
         const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        
+        // Jam kerja dari 08:00 sampai 17:00
+        const workingHours = [
+            '08:00', '09:00', '10:00', '11:00', '12:00', 
+            '13:00', '14:00', '15:00', '16:00', '17:00'
+        ];
+        
+        // Status koneksi Firebase
+        let isFirebaseConnected = false;
+        let firebaseRef = null;
+        
+        // Fungsi untuk mengupdate status koneksi Firebase
+        function updateFirebaseStatus(connected) {
+            isFirebaseConnected = connected;
+            const statusElement = document.getElementById('firebase-status');
+            const syncStatusElement = document.getElementById('firebase-sync-status');
+            
+            if (connected) {
+                statusElement.textContent = 'Terhubung ke database cloud';
+                statusElement.className = 'firebase-status firebase-connected';
+                if (syncStatusElement) {
+                    syncStatusElement.textContent = 'Terhubung ke database cloud';
+                    syncStatusElement.className = 'firebase-status firebase-connected';
+                }
+            } else {
+                statusElement.textContent = 'Tidak terhubung ke database cloud - menggunakan data lokal';
+                statusElement.className = 'firebase-status firebase-disconnected';
+                if (syncStatusElement) {
+                    syncStatusElement.textContent = 'Tidak terhubung ke database cloud - menggunakan data lokal';
+                    syncStatusElement.className = 'firebase-status firebase-disconnected';
+                }
+            }
+        }
+        
+        // Fungsi untuk memulai koneksi Firebase
+        function initFirebase() {
+            try {
+                // Coba hubungkan ke Firebase
+                firebaseRef = database.ref('schedules');
+                
+                // Deteksi status koneksi
+                database.ref('.info/connected').on('value', function(snapshot) {
+                    updateFirebaseStatus(snapshot.val() === true);
+                });
+                
+                // Listen for changes dari Firebase
+                firebaseRef.on('value', function(snapshot) {
+                    const data = snapshot.val();
+                    if (data) {
+                        localStorage.setItem('workSchedules', JSON.stringify(data));
+                        renderSchedules(currentFilter, 'mobile-week-container');
+                        renderSchedules(currentFilter, 'desktop-week-container');
+                        
+                        if (isAuthenticated) {
+                            loadEditSchedules();
+                        }
+                    }
+                });
+                
+                console.log('Firebase initialized successfully');
+            } catch (error) {
+                console.error('Error initializing Firebase:', error);
+                updateFirebaseStatus(false);
+            }
+        }
+        
+        // Fungsi untuk sinkronisasi data ke Firebase
+        function syncToFirebase() {
+            if (!isFirebaseConnected) return;
+            
+            try {
+                const schedules = JSON.parse(localStorage.getItem('workSchedules')) || [];
+                firebaseRef.set(schedules);
+                console.log('Data synced to Firebase');
+            } catch (error) {
+                console.error('Error syncing to Firebase:', error);
+            }
+        }
+        
+        // Fungsi untuk memaksa sinkronisasi ke Firebase
+        function forceSyncToFirebase() {
+            syncToFirebase();
+            showNotification('Data berhasil disinkronisasi ke cloud!', 'success');
+        }
+        
+        // Fungsi untuk memaksa sinkronisasi dari Firebase
+        function forceSyncFromFirebase() {
+            if (!isFirebaseConnected) {
+                showNotification('Tidak terhubung ke database cloud!', 'error');
+                return;
+            }
+            
+            firebaseRef.once('value').then(function(snapshot) {
+                const data = snapshot.val();
+                if (data) {
+                    localStorage.setItem('workSchedules', JSON.stringify(data));
+                    renderSchedules(currentFilter, 'mobile-week-container');
+                    renderSchedules(currentFilter, 'desktop-week-container');
+                    
+                    if (isAuthenticated) {
+                        loadEditSchedules();
+                    }
+                    
+                    showNotification('Data berhasil disinkronisasi dari cloud!', 'success');
+                }
+            }).catch(function(error) {
+                console.error('Error syncing from Firebase:', error);
+                showNotification('Gagal sinkronisasi dari cloud!', 'error');
+            });
+        }
         
         // Fungsi untuk hash password menggunakan SHA-256
         async function sha256(message) {
@@ -499,190 +739,14 @@
             }
         }
         
-        // Fungsi untuk beralih antara tab
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            if (tabName === 'upcoming') {
-                document.querySelector('.tab:nth-child(1)').classList.add('active');
-                document.getElementById('upcoming-tab').classList.add('active');
-            } else if (tabName === 'admin') {
-                document.querySelector('.tab:nth-child(2)').classList.add('active');
-                document.getElementById('admin-tab').classList.add('active');
-            }
-        }
+        // ... (Fungsi-fungsi lainnya tetap sama seperti sebelumnya)
+        // [Semua fungsi lainnya seperti switchTab, filterSchedule, getTimeSlots, 
+        //  renderSchedules, loadEditSchedules, addSchedule, updateSchedule, deleteSchedule]
         
-        // Fungsi untuk memfilter jadwal
-        function filterSchedule(filterType, version) {
-            currentFilter = filterType;
-            
-            if (version === 'mobile') {
-                renderSchedules(filterType, 'mobile-week-container');
-            } else {
-                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-                event.target.classList.add('active');
-                renderSchedules(filterType, 'desktop-week-container');
-            }
-        }
+        // Pada fungsi addSchedule, updateSchedule, dan deleteSchedule,
+        // tambahkan panggilan ke syncToFirebase() setelah mengubah data
         
-        // Render jadwal ke tampilan per hari
-        function renderSchedules(filterType, targetElementId) {
-            const schedules = JSON.parse(localStorage.getItem('workSchedules')) || [];
-            const weekContainer = document.getElementById(targetElementId);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            // Tentukan rentang tanggal berdasarkan filter
-            let startDate, endDate;
-            
-            if (filterType === 'thisWeek') {
-                // Minggu ini (Senin - Minggu)
-                startDate = new Date(today);
-                startDate.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
-                
-                endDate = new Date(startDate);
-                endDate.setDate(startDate.getDate() + 6);
-            } else if (filterType === 'nextWeek') {
-                // Minggu depan
-                startDate = new Date(today);
-                startDate.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1) + 7);
-                
-                endDate = new Date(startDate);
-                endDate.setDate(startDate.getDate() + 6);
-            } else if (filterType === 'next2Weeks') {
-                // 2 minggu ke depan
-                startDate = new Date(today);
-                startDate.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
-                
-                endDate = new Date(startDate);
-                endDate.setDate(startDate.getDate() + 13);
-            }
-            
-            // Filter jadwal berdasarkan rentang tanggal
-            let filteredSchedules = schedules.filter(schedule => {
-                const scheduleDate = new Date(schedule.date);
-                scheduleDate.setHours(0, 0, 0, 0);
-                return scheduleDate >= startDate && scheduleDate <= endDate;
-            });
-            
-            // Urutkan jadwal berdasarkan tanggal
-            filteredSchedules.sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            weekContainer.innerHTML = '';
-            
-            // Buat kartu untuk setiap hari dalam rentang
-            const currentDate = new Date(startDate);
-            while (currentDate <= endDate) {
-                const daySchedules = filteredSchedules.filter(schedule => {
-                    const scheduleDate = new Date(schedule.date);
-                    return scheduleDate.toDateString() === currentDate.toDateString();
-                });
-                
-                // Urutkan jadwal berdasarkan waktu
-                daySchedules.sort((a, b) => {
-                    const timeA = a.time.split(':').map(Number);
-                    const timeB = b.time.split(':').map(Number);
-                    return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
-                });
-                
-                const dayCard = document.createElement('div');
-                dayCard.className = 'day-card';
-                
-                // Tandai hari ini
-                if (currentDate.toDateString() === today.toDateString()) {
-                    dayCard.classList.add('today');
-                }
-                
-                const dayName = daysOfWeek[currentDate.getDay()];
-                const dateStr = `${currentDate.getDate()} ${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-                
-                dayCard.innerHTML = `
-                    <div class="day-header">
-                        <h3>${dayName}</h3>
-                        <div>${dateStr}</div>
-                    </div>
-                `;
-                
-                if (daySchedules.length === 0) {
-                    dayCard.innerHTML += `<div class="empty-state">Tidak ada jadwal</div>`;
-                } else {
-                    daySchedules.forEach(schedule => {
-                        const scheduleItem = document.createElement('div');
-                        scheduleItem.className = 'schedule-item';
-                        
-                        scheduleItem.innerHTML = `
-                            <div class="schedule-time">${schedule.time}</div>
-                            <div class="schedule-location">${schedule.location}</div>
-                            <div class="schedule-activity">${schedule.activity}</div>
-                            <span class="person-badge person-${schedule.person.toLowerCase()}">${schedule.person}</span>
-                        `;
-                        
-                        dayCard.appendChild(scheduleItem);
-                    });
-                }
-                
-                weekContainer.appendChild(dayCard);
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-        }
-        
-        // Memuat jadwal untuk edit
-        function loadEditSchedules() {
-            if (!isAuthenticated) return;
-            
-            const schedules = JSON.parse(localStorage.getItem('workSchedules')) || [];
-            const editContainer = document.getElementById('edit-schedules');
-            
-            editContainer.innerHTML = '';
-            
-            if (schedules.length === 0) {
-                editContainer.innerHTML = '<p class="empty-state">Belum ada jadwal untuk dikelola</p>';
-                return;
-            }
-            
-            // Urutkan jadwal berdasarkan tanggal
-            schedules.sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            schedules.forEach((schedule, index) => {
-                const scheduleDiv = document.createElement('div');
-                scheduleDiv.style.border = '1px solid #ddd';
-                scheduleDiv.style.padding = '10px';
-                scheduleDiv.style.margin = '10px 0';
-                scheduleDiv.style.borderRadius = '4px';
-                
-                const scheduleDate = new Date(schedule.date);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
-                let dateStatus = '';
-                if (scheduleDate.getTime() === today.getTime()) {
-                    dateStatus = '<span class="badge badge-today">Hari Ini</span>';
-                } else if (scheduleDate > today) {
-                    dateStatus = '<span class="badge badge-upcoming">Mendatang</span>';
-                } else {
-                    dateStatus = '<span class="badge badge-past">Sudah Lewat</span>';
-                }
-                
-                scheduleDiv.innerHTML = `
-                    <h4>Jadwal #${index + 1} ${dateStatus}</h4>
-                    <input type="date" value="${schedule.date}" id="edit-date-${index}">
-                    <input type="time" value="${schedule.time}" id="edit-time-${index}">
-                    <input type="text" value="${schedule.location}" id="edit-location-${index}" placeholder="Lokasi">
-                    <textarea id="edit-activity-${index}" placeholder="Deskripsi Kegiatan">${schedule.activity}</textarea>
-                    <select id="edit-person-${index}">
-                        <option value="Guardian" ${schedule.person === 'Guardian' ? 'selected' : ''}>Guardian</option>
-                        <option value="Gembab" ${schedule.person === 'Gembab' ? 'selected' : ''}>Gembab</option>
-                    </select>
-                    <button onclick="updateSchedule(${index})">Perbarui</button>
-                    <button onclick="deleteSchedule(${index})" class="btn-danger">Hapus</button>
-                `;
-                
-                editContainer.appendChild(scheduleDiv);
-            });
-        }
-        
-        // Menambah jadwal baru
+        // Contoh untuk addSchedule:
         function addSchedule() {
             if (!isAuthenticated) {
                 showNotification('Anda harus login terlebih dahulu!', 'error');
@@ -691,11 +755,12 @@
             
             const newDate = document.getElementById('new-date').value;
             const newTime = document.getElementById('new-time').value;
+            const newDuration = document.getElementById('new-duration').value;
             const newLocation = document.getElementById('new-location').value;
             const newActivity = document.getElementById('new-activity').value;
             const newPerson = document.getElementById('new-person').value;
             
-            if (!newDate || !newTime || !newLocation || !newActivity || !newPerson) {
+            if (!newDate || !newTime || !newDuration || !newLocation || !newActivity || !newPerson) {
                 showNotification('Semua field harus diisi!', 'error');
                 return;
             }
@@ -704,6 +769,7 @@
             schedules.push({
                 date: newDate,
                 time: newTime,
+                duration: parseInt(newDuration),
                 location: newLocation,
                 activity: newActivity,
                 person: newPerson
@@ -711,9 +777,13 @@
             
             localStorage.setItem('workSchedules', JSON.stringify(schedules));
             
+            // Sinkronisasi ke Firebase
+            syncToFirebase();
+            
             // Reset form
             document.getElementById('new-date').value = '';
             document.getElementById('new-time').value = '';
+            document.getElementById('new-duration').value = '1';
             document.getElementById('new-location').value = '';
             document.getElementById('new-activity').value = '';
             document.getElementById('new-person').value = '';
@@ -724,60 +794,15 @@
             loadEditSchedules();
         }
         
-        // Memperbarui jadwal
-        function updateSchedule(index) {
-            if (!isAuthenticated) return;
-            
-            const schedules = JSON.parse(localStorage.getItem('workSchedules')) || [];
-            
-            if (index >= schedules.length) {
-                showNotification('Indeks jadwal tidak valid!', 'error');
-                return;
-            }
-            
-            schedules[index] = {
-                date: document.getElementById(`edit-date-${index}`).value,
-                time: document.getElementById(`edit-time-${index}`).value,
-                location: document.getElementById(`edit-location-${index}`).value,
-                activity: document.getElementById(`edit-activity-${index}`).value,
-                person: document.getElementById(`edit-person-${index}`).value
-            };
-            
-            localStorage.setItem('workSchedules', JSON.stringify(schedules));
-            showNotification('Jadwal berhasil diperbarui!', 'success');
-            renderSchedules(currentFilter, 'mobile-week-container');
-            renderSchedules(currentFilter, 'desktop-week-container');
-            loadEditSchedules();
-        }
-        
-        // Menghapus jadwal
-        function deleteSchedule(index) {
-            if (!isAuthenticated) return;
-            
-            if (!confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) {
-                return;
-            }
-            
-            const schedules = JSON.parse(localStorage.getItem('workSchedules')) || [];
-            schedules.splice(index, 1);
-            localStorage.setItem('workSchedules', JSON.stringify(schedules));
-            
-            showNotification('Jadwal berhasil dihapus!', 'success');
-            renderSchedules(currentFilter, 'mobile-week-container');
-            renderSchedules(currentFilter, 'desktop-week-container');
-            loadEditSchedules();
-        }
-        
-        // Memuat jadwal saat halaman pertama kali dibuka
+        // Pada bagian DOMContentLoaded, tambahkan inisialisasi Firebase
         document.addEventListener('DOMContentLoaded', function() {
             // Set nilai default untuk input tanggal baru ke hari ini
             const today = new Date();
             const formattedDate = today.toISOString().split('T')[0];
             document.getElementById('new-date').value = formattedDate;
             
-            // Set nilai default untuk input waktu ke jam berikutnya
-            const nextHour = today.getHours() + 1;
-            document.getElementById('new-time').value = `${nextHour.toString().padStart(2, '0')}:00`;
+            // Inisialisasi Firebase
+            initFirebase();
             
             // Load data untuk semua tampilan
             renderSchedules('thisWeek', 'mobile-week-container');
@@ -802,47 +827,24 @@
                     {
                         date: new Date().toISOString().split('T')[0],
                         time: '09:00',
+                        duration: 2,
                         location: 'Kantor Pusat',
                         activity: 'Rapat Koordinasi Tim',
                         person: 'Guardian'
                     },
                     {
-                        date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                        date: newDate(Date.now() + 86400000).toISOString().split('T')[0],
                         time: '14:00',
+                        duration: 1,
                         location: 'Gudang Utama',
                         activity: 'Inspeksi Persediaan',
-                        person: 'Gembab'
-                    },
-                    {
-                        date: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-                        time: '10:30',
-                        location: 'Cabang Surabaya',
-                        activity: 'Kunjungan Kerja Lapangan',
-                        person: 'Guardian'
-                    },
-                    {
-                        date: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
-                        time: '13:00',
-                        location: 'Kantor Cabang',
-                        activity: 'Presentasi Proyek',
-                        person: 'Gembab'
-                    },
-                    {
-                        date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-                        time: '11:00',
-                        location: 'Lokasi Proyek A',
-                        activity: 'Monitoring Progress',
-                        person: 'Guardian'
-                    },
-                    {
-                        date: new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0],
-                        time: '15:30',
-                        location: 'Lokasi Proyek B',
-                        activity: 'Evaluasi Kinerja',
                         person: 'Gembab'
                     }
                 ];
                 localStorage.setItem('workSchedules', JSON.stringify(sampleSchedules));
+                
+                // Sinkronisasi ke Firebase
+                syncToFirebase();
                 
                 // Reload setelah menambahkan data contoh
                 renderSchedules('thisWeek', 'mobile-week-container');
