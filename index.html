@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <style>
+        /* CSS Anda yang sudah ada (dipertahankan sama) */
         :root {
             --primary: #3498db;
             --secondary: #2c3e50;
@@ -392,6 +393,23 @@
             margin-top: 5px;
             text-align: center;
         }
+        
+        .firebase-error {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #ffeeba;
+        }
+        
+        .config-panel {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -399,6 +417,35 @@
         <h1>Jadwal Kunjungan Kerja</h1>
         <p>Jadwal kunjungan kerja yang mudah diakses</p>
     </header>
+    
+    <div id="firebase-config-panel" class="config-panel">
+        <h3>Konfigurasi Firebase</h3>
+        <p>Sebelum menggunakan aplikasi, silakan konfigurasi Firebase terlebih dahulu:</p>
+        <div class="form-row">
+            <input type="text" id="apiKey" placeholder="API Key">
+            <input type="text" id="authDomain" placeholder="Auth Domain">
+        </div>
+        <div class="form-row">
+            <input type="text" id="projectId" placeholder="Project ID">
+            <input type="text" id="storageBucket" placeholder="Storage Bucket">
+        </div>
+        <div class="form-row">
+            <input type="text" id="messagingSenderId" placeholder="Messaging Sender ID">
+            <input type="text" id="appId" placeholder="App ID">
+        </div>
+        <button id="save-config-btn" class="btn-success">Simpan Konfigurasi</button>
+    </div>
+    
+    <div id="firebase-error" class="firebase-error hidden">
+        <h3>Error Koneksi Firebase</h3>
+        <p>Terjadi kesalahan saat menghubungkan ke Firebase. Pastikan:</p>
+        <ol>
+            <li>Anda telah mengisi konfigurasi Firebase dengan benar</li>
+            <li>Firestore Database sudah diaktifkan di Firebase Console</li>
+            <li>Aturan keamanan Firestore mengizinkan read/write (sementara bisa diatur ke mode test)</li>
+        </ol>
+        <p>Detail error: <span id="error-details"></span></p>
+    </div>
     
     <div class="mobile-only">
         <div class="card">
@@ -414,7 +461,7 @@
             </div>
             
             <div id="mobile-week-container" class="week-container">
-                <!-- Konten mingguan akan dimuat di sini -->
+                <div class="loading">Memuat jadwal...</div>
             </div>
         </div>
     </div>
@@ -427,7 +474,7 @@
         </div>
         
         <div id="desktop-week-container" class="week-container">
-            <!-- Konten mingguan akan dimuat di sini -->
+            <div class="loading">Memuat jadwal...</div>
         </div>
     </div>
 
@@ -437,7 +484,6 @@
     </div>
     
     <div id="upcoming-tab" class="tab-content active">
-        <!-- Konten jadwal sudah ditampilkan di atas -->
         <div class="card">
             <p>Gunakan filter di atas untuk melihat jadwal kunjungan kerja.</p>
         </div>
@@ -451,6 +497,7 @@
                 <input type="password" id="password-input" placeholder="Password admin">
                 <button id="login-button">Login sebagai Admin</button>
                 <button id="logout-button" class="btn-danger hidden">Logout</button>
+                <p class="password-note">Gunakan email dan password yang telah terdaftar di Firebase Authentication</p>
             </div>
         </div>
 
@@ -502,33 +549,19 @@
                 
                 <h3>Kelola Jadwal yang Ada</h3>
                 <div id="edit-schedules">
-                    <!-- Daftar jadwal untuk edit akan dimuat di sini -->
+                    <div class="empty-state">Memuat jadwal...</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Konfigurasi Firebase - GANTI DENGAN KONFIGURASI ANDA
-        const firebaseConfig = {
-  apiKey: "AIzaSyCVQ169jflIbfqjnaGEO1MM0qRtm8Yaav4",
-  authDomain: "jadwal-kunjungan-kerja.firebaseapp.com",
-  databaseURL: "https://jadwal-kunjungan-kerja-default-rtdb.firebaseio.com",
-  projectId: "jadwal-kunjungan-kerja",
-  storageBucket: "jadwal-kunjungan-kerja.firebasestorage.app",
-  messagingSenderId: "355798488442",
-  appId: "1:355798488442:web:4beaee4ac0573af70a32c3",
-  measurementId: "G-QPRNX7SY4G"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-        // Inisialisasi Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        // Variabel global untuk Firebase
+        let db;
+        let auth;
+        let firebaseConfig = {};
+        let unsubscribeSchedules = null;
+        let isFirebaseInitialized = false;
         
         // Daftar hari dalam bahasa Indonesia
         const daysOfWeek = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -541,7 +574,85 @@ const analytics = getAnalytics(app);
         ];
         
         let currentFilter = 'thisWeek';
-        let unsubscribeSchedules = null;
+        
+        // Fungsi untuk inisialisasi Firebase
+        function initializeFirebase() {
+            try {
+                // Ambil konfigurasi dari localStorage
+                const savedConfig = localStorage.getItem('firebaseConfig');
+                if (savedConfig) {
+                    firebaseConfig = JSON.parse(savedConfig);
+                    
+                    // Isi form konfigurasi
+                    document.getElementById('apiKey').value = firebaseConfig.apiKey || '';
+                    document.getElementById('authDomain').value = firebaseConfig.authDomain || '';
+                    document.getElementById('projectId').value = firebaseConfig.projectId || '';
+                    document.getElementById('storageBucket').value = firebaseConfig.storageBucket || '';
+                    document.getElementById('messagingSenderId').value = firebaseConfig.messagingSenderId || '';
+                    document.getElementById('appId').value = firebaseConfig.appId || '';
+                    
+                    // Inisialisasi Firebase dengan konfigurasi
+                    firebase.initializeApp(firebaseConfig);
+                    db = firebase.firestore();
+                    auth = firebase.auth();
+                    isFirebaseInitialized = true;
+                    
+                    // Sembunyikan panel konfigurasi
+                    document.getElementById('firebase-config-panel').classList.add('hidden');
+                    
+                    // Load data
+                    renderSchedules(currentFilter, 'mobile-week-container');
+                    renderSchedules(currentFilter, 'desktop-week-container');
+                    
+                    // Pantau status autentikasi
+                    auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            // User sudah login
+                            document.getElementById('login-section').classList.add('hidden');
+                            document.getElementById('admin-panel').classList.remove('hidden');
+                            document.getElementById('logout-button').classList.remove('hidden');
+                            loadEditSchedules();
+                        } else {
+                            // User belum login
+                            document.getElementById('login-section').classList.remove('hidden');
+                            document.getElementById('admin-panel').classList.add('hidden');
+                            document.getElementById('logout-button').classList.add('hidden');
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error initializing Firebase:', error);
+                showFirebaseError('Gagal menginisialisasi Firebase: ' + error.message);
+            }
+        }
+        
+        // Fungsi untuk menyimpan konfigurasi Firebase
+        function saveFirebaseConfig() {
+            firebaseConfig = {
+                apiKey: document.getElementById('apiKey').value,
+                authDomain: document.getElementById('authDomain').value,
+                projectId: document.getElementById('projectId').value,
+                storageBucket: document.getElementById('storageBucket').value,
+                messagingSenderId: document.getElementById('messagingSenderId').value,
+                appId: document.getElementById('appId').value
+            };
+            
+            // Simpan ke localStorage
+            localStorage.setItem('firebaseConfig', JSON.stringify(firebaseConfig));
+            
+            // Inisialisasi ulang Firebase
+            if (firebase.apps.length > 0) {
+                firebase.app().delete();
+            }
+            
+            initializeFirebase();
+        }
+        
+        // Fungsi untuk menampilkan error Firebase
+        function showFirebaseError(message) {
+            document.getElementById('firebase-error').classList.remove('hidden');
+            document.getElementById('error-details').textContent = message;
+        }
         
         // Fungsi untuk menampilkan notifikasi
         function showNotification(message, type) {
@@ -556,6 +667,11 @@ const analytics = getAnalytics(app);
         
         // Fungsi login dengan Firebase Auth
         function login() {
+            if (!isFirebaseInitialized) {
+                showNotification('Firebase belum dikonfigurasi dengan benar!', 'error');
+                return;
+            }
+            
             const email = document.getElementById('email-input').value;
             const password = document.getElementById('password-input').value;
             
@@ -567,12 +683,7 @@ const analytics = getAnalytics(app);
             auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     // Login berhasil
-                    const user = userCredential.user;
                     showNotification('Login berhasil!', 'success');
-                    document.getElementById('login-section').classList.add('hidden');
-                    document.getElementById('admin-panel').classList.remove('hidden');
-                    document.getElementById('logout-button').classList.remove('hidden');
-                    loadEditSchedules();
                 })
                 .catch((error) => {
                     console.error('Error logging in:', error);
@@ -584,11 +695,6 @@ const analytics = getAnalytics(app);
         function logout() {
             auth.signOut().then(() => {
                 showNotification('Logout berhasil!', 'success');
-                document.getElementById('login-section').classList.remove('hidden');
-                document.getElementById('admin-panel').classList.add('hidden');
-                document.getElementById('logout-button').classList.add('hidden');
-                document.getElementById('email-input').value = '';
-                document.getElementById('password-input').value = '';
             }).catch((error) => {
                 console.error('Error logging out:', error);
                 showNotification('Gagal logout!', 'error');
@@ -632,6 +738,11 @@ const analytics = getAnalytics(app);
         
         // Fungsi untuk mendapatkan data jadwal dari Firestore
         function getSchedulesFromFirestore(callback) {
+            if (!isFirebaseInitialized) {
+                showNotification('Firebase belum dikonfigurasi!', 'error');
+                return;
+            }
+            
             // Hentikan listener sebelumnya jika ada
             if (unsubscribeSchedules) {
                 unsubscribeSchedules();
@@ -652,6 +763,7 @@ const analytics = getAnalytics(app);
                 }, (error) => {
                     console.error("Error getting schedules:", error);
                     showNotification('Gagal memuat jadwal!', 'error');
+                    showFirebaseError(error.message);
                 });
         }
         
@@ -663,6 +775,11 @@ const analytics = getAnalytics(app);
             
             // Tampilkan loading state
             weekContainer.innerHTML = '<div class="loading">Memuat jadwal...</div>';
+            
+            if (!isFirebaseInitialized) {
+                weekContainer.innerHTML = '<div class="empty-state">Firebase belum dikonfigurasi. Silakan isi form konfigurasi di atas.</div>';
+                return;
+            }
             
             // Ambil data dari Firestore
             getSchedulesFromFirestore((schedules) => {
@@ -898,6 +1015,7 @@ const analytics = getAnalytics(app);
             .catch((error) => {
                 console.error('Error adding schedule:', error);
                 showNotification('Gagal menambahkan jadwal!', 'error');
+                showFirebaseError(error.message);
             });
         }
         
@@ -922,6 +1040,7 @@ const analytics = getAnalytics(app);
                 .catch((error) => {
                     console.error('Error updating schedule:', error);
                     showNotification('Gagal memperbarui jadwal!', 'error');
+                    showFirebaseError(error.message);
                 });
         }
         
@@ -940,6 +1059,7 @@ const analytics = getAnalytics(app);
                 .catch((error) => {
                     console.error('Error deleting schedule:', error);
                     showNotification('Gagal menghapus jadwal!', 'error');
+                    showFirebaseError(error.message);
                 });
         }
         
@@ -959,6 +1079,9 @@ const analytics = getAnalytics(app);
             // Event listener untuk tombol tambah jadwal
             document.getElementById('add-schedule-btn').addEventListener('click', addSchedule);
             
+            // Event listener untuk tombol simpan konfigurasi
+            document.getElementById('save-config-btn').addEventListener('click', saveFirebaseConfig);
+            
             // Event listener untuk input password (bisa login dengan tekan Enter)
             document.getElementById('password-input').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
@@ -966,27 +1089,9 @@ const analytics = getAnalytics(app);
                 }
             });
             
-            // Load data untuk semua tampilan
-            renderSchedules('thisWeek', 'mobile-week-container');
-            renderSchedules('thisWeek', 'desktop-week-container');
-            
-            // Pantau status autentikasi
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    // User sudah login
-                    document.getElementById('login-section').classList.add('hidden');
-                    document.getElementById('admin-panel').classList.remove('hidden');
-                    document.getElementById('logout-button').classList.remove('hidden');
-                    loadEditSchedules();
-                } else {
-                    // User belum login
-                    document.getElementById('login-section').classList.remove('hidden');
-                    document.getElementById('admin-panel').classList.add('hidden');
-                    document.getElementById('logout-button').classList.add('hidden');
-                }
-            });
+            // Inisialisasi Firebase
+            initializeFirebase();
         });
     </script>
 </body>
 </html>
-
