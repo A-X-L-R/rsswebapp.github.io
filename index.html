@@ -413,7 +413,7 @@
                 <h3>Admin Login</h3>
                 <input type="password" id="password-input" placeholder="Masukkan password admin">
                 <div class="password-note">Password: *a6a55AT</div>
-                <button onclick="login()">Login sebagai Admin</button>
+                <button id="login-button" onclick="login()">Login sebagai Admin</button>
             </div>
         </div>
 
@@ -460,10 +460,19 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
         
-        // Fungsi login
+        // Fungsi login - DIPERBAIKI
         async function login() {
-            const passwordInput = document.getElementById('password-input').value;
-            const hashedPassword = await sha256(passwordInput);
+            console.log("Login function called"); // Debug log
+            const passwordInput = document.getElementById('password-input');
+            const password = passwordInput.value;
+            
+            if (!password) {
+                showNotification('Masukkan password!', 'error');
+                return;
+            }
+            
+            const hashedPassword = await sha256(password);
+            console.log("Hashed password:", hashedPassword); // Debug log
             
             if (hashedPassword === DEFAULT_PASSWORD) {
                 isAuthenticated = true;
@@ -823,6 +832,16 @@
                 renderSchedules('thisWeek', 'mobile-week-container');
                 renderSchedules('thisWeek', 'desktop-week-container');
             }
+            
+            // Event listener untuk tombol login - PERBAIKAN
+            document.getElementById('login-button').addEventListener('click', login);
+            
+            // Event listener untuk input password (bisa login dengan tekan Enter)
+            document.getElementById('password-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
         });
     </script>
 </body>
